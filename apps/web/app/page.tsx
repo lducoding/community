@@ -15,6 +15,16 @@ interface RecentFollower {
   createdAt: string;
 }
 
+interface FeedPost {
+  id: number;
+  userId: number;
+  username: string;
+  title?: string;
+  body?: string;
+  type: string;
+  createdAt: string;
+}
+
 export default function Home() {
   const [userId, setUserId] = useState('');
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -24,6 +34,8 @@ export default function Home() {
   const [followLoading, setFollowLoading] = useState(false);
   const [followError, setFollowError] = useState('');
   const [followSuccess, setFollowSuccess] = useState(false);
+  const [feed, setFeed] = useState<FeedPost[] | null>(null);
+  const [feedLoading, setFeedLoading] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -41,6 +53,7 @@ export default function Home() {
       setFollowers(null);
       setFollowSuccess(false);
       setFollowError('');
+      setFeed(null);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : '오류가 발생했습니다.');
     } finally {
@@ -69,6 +82,23 @@ export default function Home() {
       setError(e instanceof Error ? e.message : '오류가 발생했습니다.');
     } finally {
       setFollowerLoading(false);
+    }
+  }
+
+  async function handleFeed() {
+    if (feed) {
+      setFeed(null);
+      return;
+    }
+    setFeedLoading(true);
+    try {
+      const res = await fetch(`http://localhost:3000/posts/feed/${userId}`);
+      if (!res.ok) throw new Error(`서버 오류: ${res.status}`);
+      setFeed(await res.json());
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : '오류가 발생했습니다.');
+    } finally {
+      setFeedLoading(false);
     }
   }
 
@@ -115,63 +145,88 @@ export default function Home() {
       {error && <p className={styles.error}>{error}</p>}
 
       {profile && (
-        <div className={styles.card}>
-          <h2
-            className={styles.username}
-            onClick={handleUsernameClick}
-            style={{ cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '4px' }}
-          >
-            {followerLoading ? '불러오는 중...' : profile.username}
-          </h2>
-          <p className={styles.birthday}>생년월일: {profile.birthday}</p>
-          <div className={styles.stats}>
-            <div className={styles.stat}>
-              <span className={styles.statValue}>{profile.followCount}</span>
-              <span className={styles.statLabel}>팔로잉</span>
-            </div>
-            <div className={styles.statDivider} />
-            <div className={styles.stat}>
-              <span className={styles.statValue}>{profile.followerCount}</span>
-              <span className={styles.statLabel}>팔로워</span>
-            </div>
-          </div>
-
-          <div className={styles.followBox}>
-            <input
-              className={styles.input}
-              type="number"
-              placeholder="내 User ID"
-              value={myUserId}
-              onChange={(e) => { setMyUserId(e.target.value); setFollowSuccess(false); }}
-            />
-            <button
-              className={styles.button}
-              onClick={handleFollow}
-              disabled={followLoading || !myUserId}
+        <div className={styles.profileRow}>
+          <div className={styles.card}>
+            <h2
+              className={styles.username}
+              onClick={handleUsernameClick}
+              style={{ cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '4px' }}
             >
-              {followLoading ? '처리 중...' : '팔로우'}
-            </button>
-          </div>
-          {followSuccess && <p className={styles.followSuccess}>팔로우 완료 ✓</p>}
-          {followError && <p className={styles.error}>{followError}</p>}
-
-          {followers && (
-            <div className={styles.followerList}>
-              <p className={styles.followerTitle}>최근 팔로워</p>
-              {followers.length === 0 ? (
-                <p className={styles.followerEmpty}>팔로워가 없습니다.</p>
-              ) : (
-                <ul className={styles.followerItems}>
-                  {followers.map((f) => (
-                    <li key={f.followingUserId} className={styles.followerItem}>
-                      <span>ID: {f.followingUserId}</span>
-                      <span className={styles.followerDate}>{new Date(f.createdAt).toLocaleDateString('ko-KR')}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              {followerLoading ? '불러오는 중...' : profile.username}
+            </h2>
+            <p className={styles.birthday}>생년월일: {profile.birthday}</p>
+            <div className={styles.stats}>
+              <div className={styles.stat}>
+                <span className={styles.statValue}>{profile.followCount}</span>
+                <span className={styles.statLabel}>팔로잉</span>
+              </div>
+              <div className={styles.statDivider} />
+              <div className={styles.stat}>
+                <span className={styles.statValue}>{profile.followerCount}</span>
+                <span className={styles.statLabel}>팔로워</span>
+              </div>
             </div>
-          )}
+
+            <div className={styles.followBox}>
+              <input
+                className={styles.input}
+                type="number"
+                placeholder="내 User ID"
+                value={myUserId}
+                onChange={(e) => { setMyUserId(e.target.value); setFollowSuccess(false); }}
+              />
+              <button
+                className={styles.button}
+                onClick={handleFollow}
+                disabled={followLoading || !myUserId}
+              >
+                {followLoading ? '처리 중...' : '팔로우'}
+              </button>
+            </div>
+            {followSuccess && <p className={styles.followSuccess}>팔로우 완료 ✓</p>}
+            {followError && <p className={styles.error}>{followError}</p>}
+
+            {followers && (
+              <div className={styles.followerList}>
+                <p className={styles.followerTitle}>최근 팔로워</p>
+                {followers.length === 0 ? (
+                  <p className={styles.followerEmpty}>팔로워가 없습니다.</p>
+                ) : (
+                  <ul className={styles.followerItems}>
+                    {followers.map((f) => (
+                      <li key={f.followingUserId} className={styles.followerItem}>
+                        <span>ID: {f.followingUserId}</span>
+                        <span className={styles.followerDate}>{new Date(f.createdAt).toLocaleDateString('ko-KR')}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className={styles.feedSection}>
+            <button className={styles.feedButton} onClick={handleFeed} disabled={feedLoading}>
+              {feedLoading ? '불러오는 중...' : feed ? '피드 닫기' : '피드 보기'}
+            </button>
+
+            {feed && (
+              <div className={styles.feedList}>
+                {feed.length === 0 ? (
+                  <p className={styles.followerEmpty}>피드가 없습니다.</p>
+                ) : (
+                  feed.map((post) => (
+                    <div key={post.id} className={styles.feedItem}>
+                      <p className={styles.feedAuthor}>{post.username}</p>
+                      <p className={styles.feedTitle}>{post.title ?? '(제목 없음)'}</p>
+                      {post.body && <p className={styles.feedBody}>{post.body}</p>}
+                      <p className={styles.feedDate}>{new Date(post.createdAt).toLocaleDateString('ko-KR')}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
