@@ -13,6 +13,6 @@ export class Follow {
   @ManyToOne(() => User, { fieldName: 'followed_user_id', comment: '팔로우를 받은 사용자 id (상대방)' })
   followedUser!: User;
 
-  @Property({ onCreate: () => new Date(), comment: '팔로우 일시' })
+  @Property({ onCreate: () => new Date(), default: 'now()', comment: '팔로우 일시' })
   createdAt: Date = new Date();
 }

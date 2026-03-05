@@ -20,6 +20,10 @@ export default function Home() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [followers, setFollowers] = useState<RecentFollower[] | null>(null);
   const [followerLoading, setFollowerLoading] = useState(false);
+  const [myUserId, setMyUserId] = useState('');
+  const [followLoading, setFollowLoading] = useState(false);
+  const [followError, setFollowError] = useState('');
+  const [followSuccess, setFollowSuccess] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -35,6 +39,8 @@ export default function Home() {
       const data = await res.json();
       setProfile(data);
       setFollowers(null);
+      setFollowSuccess(false);
+      setFollowError('');
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : '오류가 발생했습니다.');
     } finally {
@@ -63,6 +69,28 @@ export default function Home() {
       setError(e instanceof Error ? e.message : '오류가 발생했습니다.');
     } finally {
       setFollowerLoading(false);
+    }
+  }
+
+  async function handleFollow() {
+    if (!myUserId || !userId) return;
+    setFollowLoading(true);
+    setFollowError('');
+    setFollowSuccess(false);
+    try {
+      const res = await fetch(`http://localhost:3000/users/${userId}/follow`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ followingUserId: Number(myUserId) }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message ?? '팔로우에 실패했습니다.');
+      setFollowSuccess(true);
+      setProfile((prev) => prev ? { ...prev, followerCount: prev.followerCount + 1 } : prev);
+    } catch (e: unknown) {
+      setFollowError(e instanceof Error ? e.message : '오류가 발생했습니다.');
+    } finally {
+      setFollowLoading(false);
     }
   }
 
@@ -107,6 +135,24 @@ export default function Home() {
               <span className={styles.statLabel}>팔로워</span>
             </div>
           </div>
+
+          <div className={styles.followBox}>
+            <input
+              className={styles.input}
+              type="number"
+              placeholder="내 User ID"
+              value={myUserId}
+              onChange={(e) => setMyUserId(e.target.value)}
+            />
+            <button
+              className={styles.button}
+              onClick={handleFollow}
+              disabled={followLoading || !myUserId || followSuccess}
+            >
+              {followSuccess ? '팔로우 완료 ✓' : followLoading ? '처리 중...' : '팔로우'}
+            </button>
+          </div>
+          {followError && <p className={styles.error}>{followError}</p>}
 
           {followers && (
             <div className={styles.followerList}>
