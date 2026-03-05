@@ -36,3 +36,21 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+# Claude
+.claude/
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# pnpm
+.pnpm-store/
+
+# NestJS
+*.js.map
+
+# OS
+Thumbs.db
