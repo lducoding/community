@@ -10,6 +10,11 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get(':id/profile')
+  findProfile(@Param('id', ParseIntPipe) id: number) {
+    return this.usersService.findProfile(id);
+  }
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.findOne(id);

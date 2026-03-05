@@ -14,4 +14,9 @@ export class FollowController {
   findFollowers(@Param('id', ParseIntPipe) id: number) {
     return this.followService.findFollowers(id);
   }
+
+  @Get('followers/recent')
+  findRecentFollowers(@Param('id', ParseIntPipe) id: number) {
+    return this.followService.findRecentFollowers(id);
+  }
 }

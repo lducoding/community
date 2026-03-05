@@ -10,16 +10,9 @@ interface UserProfile {
   followerCount: number;
 }
 
-interface RecentFollower {
-  followingUserId: number;
-  createdAt: string;
-}
-
-export default function Home() {
+export default function ProfilePage() {
   const [userId, setUserId] = useState('');
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [followers, setFollowers] = useState<RecentFollower[] | null>(null);
-  const [followerLoading, setFollowerLoading] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -34,35 +27,10 @@ export default function Home() {
       if (!res.ok) throw new Error('유저를 찾을 수 없습니다.');
       const data = await res.json();
       setProfile(data);
-      setFollowers(null);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : '오류가 발생했습니다.');
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleUsernameClick() {
-    console.log('username clicked, userId:', userId);
-    if (followers) {
-      setFollowers(null);
-      return;
-    }
-    setFollowerLoading(true);
-    try {
-      const url = `http://localhost:3000/users/${userId}/followers/recent`;
-      console.log('fetching:', url);
-      const res = await fetch(url);
-      console.log('response status:', res.status);
-      if (!res.ok) throw new Error(`서버 오류: ${res.status}`);
-      const data = await res.json();
-      console.log('followers data:', data);
-      setFollowers(data);
-    } catch (e: unknown) {
-      console.error('error:', e);
-      setError(e instanceof Error ? e.message : '오류가 발생했습니다.');
-    } finally {
-      setFollowerLoading(false);
     }
   }
 
@@ -88,13 +56,7 @@ export default function Home() {
 
       {profile && (
         <div className={styles.card}>
-          <h2
-            className={styles.username}
-            onClick={handleUsernameClick}
-            style={{ cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '4px' }}
-          >
-            {followerLoading ? '불러오는 중...' : profile.username}
-          </h2>
+          <h2 className={styles.username}>{profile.username}</h2>
           <p className={styles.birthday}>생년월일: {profile.birthday}</p>
           <div className={styles.stats}>
             <div className={styles.stat}>
@@ -107,24 +69,6 @@ export default function Home() {
               <span className={styles.statLabel}>팔로워</span>
             </div>
           </div>
-
-          {followers && (
-            <div className={styles.followerList}>
-              <p className={styles.followerTitle}>최근 팔로워</p>
-              {followers.length === 0 ? (
-                <p className={styles.followerEmpty}>팔로워가 없습니다.</p>
-              ) : (
-                <ul className={styles.followerItems}>
-                  {followers.map((f) => (
-                    <li key={f.followingUserId} className={styles.followerItem}>
-                      <span>ID: {f.followingUserId}</span>
-                      <span className={styles.followerDate}>{new Date(f.createdAt).toLocaleDateString('ko-KR')}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
         </div>
       )}
     </div>

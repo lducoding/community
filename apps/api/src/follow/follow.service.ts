@@ -13,4 +13,16 @@ export class FollowService {
   findFollowers(followedUserId: number): Promise<Follow[]> {
     return this.em.find(Follow, { followedUser: { id: followedUserId } }, { populate: ['followingUser'] });
   }
+
+  async findRecentFollowers(followedUserId: number) {
+    const follows = await this.em.find(
+      Follow,
+      { followedUser: { id: followedUserId } },
+      { orderBy: { createdAt: 'DESC' }, limit: 10 },
+    );
+    return follows.map((f) => ({
+      followingUserId: f.followingUser.id,
+      createdAt: f.createdAt,
+    }));
+  }
 }
