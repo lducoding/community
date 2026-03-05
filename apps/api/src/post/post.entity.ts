@@ -1,7 +1,8 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { User } from '../users/user.entity';
+import { PostRepository } from './post.repository';
 
-@Entity({ tableName: 'post' })
+@Entity({ tableName: 'post', repository: () => PostRepository })
 export class Post {
   @PrimaryKey({ type: 'bigint' })
   id!: number;

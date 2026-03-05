@@ -10,6 +10,11 @@ export class PostController {
     return this.postService.findAll();
   }
 
+  @Get('feed/:userId')
+  findFeed(@Param('userId', ParseIntPipe) userId: number) {
+    return this.postService.findFeedPosts(userId);
+  }
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.postService.findOne(id);
