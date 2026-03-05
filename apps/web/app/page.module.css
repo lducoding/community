@@ -113,6 +113,12 @@
   width: 100%;
 }
 
+.followSuccess {
+  font-size: 13px;
+  color: #16a34a;
+  margin-top: 4px;
+}
+
 .followerList {
   width: 100%;
   margin-top: 24px;

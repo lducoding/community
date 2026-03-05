@@ -142,16 +142,17 @@ export default function Home() {
               type="number"
               placeholder="내 User ID"
               value={myUserId}
-              onChange={(e) => setMyUserId(e.target.value)}
+              onChange={(e) => { setMyUserId(e.target.value); setFollowSuccess(false); }}
             />
             <button
               className={styles.button}
               onClick={handleFollow}
-              disabled={followLoading || !myUserId || followSuccess}
+              disabled={followLoading || !myUserId}
             >
-              {followSuccess ? '팔로우 완료 ✓' : followLoading ? '처리 중...' : '팔로우'}
+              {followLoading ? '처리 중...' : '팔로우'}
             </button>
           </div>
+          {followSuccess && <p className={styles.followSuccess}>팔로우 완료 ✓</p>}
           {followError && <p className={styles.error}>{followError}</p>}
 
           {followers && (
